@@ -55,19 +55,19 @@ public class MixinExtension {
     
     class ReobfTask {
         final Project project
-        final Object taskWrapper
+        final Object renameJarInPlace
         
-        ReobfTask(Project project, Object taskWrapper) {
+        ReobfTask(Project project, Object renameJarInPlace) {
             this.project = project
-            this.taskWrapper = taskWrapper
+            this.renameJarInPlace = renameJarInPlace
         }
         
         Jar getJar() {
-            this.project.tasks[this.taskWrapper.name]
+            this.project.tasks[this.renameJarInPlace.jarTask]
         }
         
         String getName() {
-            this.taskWrapper.name
+            this.renameJarInPlace.name
         }
     }
     
@@ -203,8 +203,8 @@ public class MixinExtension {
         
         this.project.afterEvaluate {
             // Gather reobf jars for processing
-            project.reobf.each { reobfTaskWrapper ->
-                this.reobfTasks += new ReobfTask(project, reobfTaskWrapper)
+            project.reobf.each { renameJarInPlace ->
+                this.reobfTasks += new ReobfTask(project, renameJarInPlace)
             }
 
             // Search for sourceSets with a refmap property and configure them
@@ -218,8 +218,8 @@ public class MixinExtension {
             project.configurations.compile.allDependencies.withType(ProjectDependency) { upstream ->
                 def mixinExt = upstream.dependencyProject.extensions.findByName("mixin")
                 if (mixinExt) {
-                    project.reobf.each { reobfTaskWrapper ->
-                        mixinExt.reobfTasks += new ReobfTask(project, reobfTaskWrapper)
+                    project.reobf.each { renameJarInPlace ->
+                        mixinExt.reobfTasks += new ReobfTask(project, renameJarInPlace)
                     }
                 }
             }
@@ -308,14 +308,14 @@ public class MixinExtension {
      * Getter for reobfSrgFile, fetch from the <tt>genSrgs</tt> task if not configured
      */
     Object getReobfSrgFile() {
-        this.reobfSrgFile != null ? project.file(this.reobfSrgFile) : project.tasks.genSrgs.mcpToSrg
+        this.reobfSrgFile != null ? project.file(this.reobfSrgFile) : project.tasks.createMcpToSrg.outputSRG
     }
     
     /**
      * Getter for reobfSrgFile, fetch from the <tt>genSrgs</tt> task if not configured
      */
     Object getReobfNotchSrgFile() {
-        this.reobfNotchSrgFile != null ? project.file(this.reobfNotchSrgFile) : project.tasks.genSrgs.mcpToNotch
+        this.reobfNotchSrgFile != null ? project.file(this.reobfNotchSrgFile) : project.tasks.createMcpToObf.outputSRG
     }
     
     /**
@@ -578,10 +578,10 @@ public class MixinExtension {
         // Closure to allocate generated AP resources once compile task
         // is completed
         this.reobfTasks.each { reobfTask ->
-            reobfTask.taskWrapper.task.doFirst {
+            reobfTask.renameJarInPlace.doFirst {
                 try {
                     def mapped = false
-                    [reobfTask.taskWrapper.mappingType, this.defaultObfuscationEnv.toString()].each { arg ->
+                    [reobfTask.renameJarInPlace.mappingType, this.defaultObfuscationEnv.toString()].each { arg ->
                         ReobfMappingType.each { type ->
                             if (type.matches(arg) && !mapped && srgFiles[type].exists()) {
                                 this.addMappings(reobfTask, type, srgFiles[type])
@@ -628,7 +628,7 @@ public class MixinExtension {
         }
         
         project.logger.info "Contributing {} ({}) mappings to {} in {}", type, srgFile, reobfTask.name, reobfTask.project
-        reobfTask.taskWrapper.extraFiles(srgFile)
+        reobfTask.renameJarInPlace.extraFiles(srgFile)
     }
     
     /**

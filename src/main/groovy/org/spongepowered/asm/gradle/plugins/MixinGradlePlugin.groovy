@@ -59,12 +59,8 @@ public class MixinGradlePlugin implements Plugin<Project> {
      * @param project Project to validate
      */
     private void checkEnvironment(Project project) {
-        if (!project.tasks.findByName('genSrgs')) {
-            throw new InvalidUserDataException("Could not find task 'genSrgs' on $project, ensure ForgeGradle is applied.")
-        }
-
-        if (!project.extensions.findByName('reobf')) {
-            throw new InvalidUserDataException("Could not find property 'reobf' on $project, ensure ForgeGradle is applied.")
+        if (!project.extensions.findByName('minecraft')) {
+            throw new InvalidUserDataException("Could not find property 'minecraft' on $project, ensure ForgeGradle is applied.")
         }
     }
     

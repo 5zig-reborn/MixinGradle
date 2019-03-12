@@ -63,5 +63,4 @@ public class MixinGradlePlugin implements Plugin<Project> {
             throw new InvalidUserDataException("Could not find property 'minecraft' on $project, ensure ForgeGradle is applied.")
         }
     }
-    
 }

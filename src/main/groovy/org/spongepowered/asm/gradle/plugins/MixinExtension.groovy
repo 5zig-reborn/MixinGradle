@@ -517,6 +517,8 @@ public class MixinExtension {
         if (!(compileTask instanceof JavaCompile)) {
             throw new InvalidUserDataException(sprintf('Cannot add non-java %s to mixin processor', set))
         }
+
+        compileTask.dependsOn(project.tasks.createMcpToSrg, project.tasks.createMcpToObf)
         
         // Don't perform default behaviour, a sourceSet has been added manually
         this.applyDefault = false

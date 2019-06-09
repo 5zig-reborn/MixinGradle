@@ -236,7 +236,7 @@ public class MixinExtension {
             }
             delegate.ext.refMaps
         }
-        
+
         AbstractArchiveTask.metaClass.setRefMaps = { value ->
             delegate.ext.refMaps = value
         }
@@ -603,7 +603,8 @@ public class MixinExtension {
 
         // Add the refmap to all reobf'd jars
         this.reobfTasks.each { reobfTask ->
-            reobfTask.jar.getRefMaps().files.add(artefactSpecificRefMap)
+            def set2 = new HashSet(reobfTask.jar.getRefMaps().files)
+            set2.add(artefactSpecificRefMap)
             reobfTask.jar.from(artefactSpecificRefMap)
         }
 
